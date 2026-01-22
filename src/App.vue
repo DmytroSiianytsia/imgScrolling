@@ -1,19 +1,18 @@
 <template>
   <div class="gallery-container">
-    <div class="upload-section">
-      <input 
-        ref="fileInput" 
-        type="file" 
-        multiple 
-        accept="image/*"
-        @change="handleFileUpload"
-        style="display: none"
-      />
-      <button @click="triggerFileInput" class="upload-btn">Завантажити файли</button>
-    </div>
-
     <div class="gallery" ref="gallery">
-      <img v-for="(image, index) in images" :key="index" :src="image" alt="Gallery image" />
+      <div class="upload-section">
+        <input 
+          ref="fileInput" 
+          type="file" 
+          multiple 
+          accept="image/*"
+          @change="handleFileUpload"
+          style="display: none"
+        />
+        <button @click="triggerFileInput" class="upload-btn">Завантажити файли</button>
+      </div>
+      <img v-for="(image, index) in images" :key="index" :src="image" alt="Gallery image" :style="{ width: imageWidth + '%' }" />
     </div>
   </div>
 </template>
@@ -26,10 +25,10 @@ const fileInput = ref(null);
 const images = ref([]);
 const isScrolling = ref(false);
 const scrollInterval = ref(null);
-const speed = ref(2);
+const speed = ref(0.5);
+const imageWidth = ref(100);
 
 onMounted(async () => {
-  // Завантажуємо картинки з папки
   const modules = import.meta.glob('./assets/images/**/*', { 
     query: '?url',
     import: 'default' 
@@ -45,7 +44,6 @@ onMounted(async () => {
   
   images.value = loadedImages;
   
-  // Слухач клавіш
   window.addEventListener('keydown', handleKeyPress);
 });
 
@@ -73,7 +71,6 @@ const handleFileUpload = (event) => {
     reader.readAsDataURL(file);
   });
   
-  // Очищаємо input
   fileInput.value.value = '';
 };
 
@@ -90,6 +87,12 @@ const handleKeyPress = (event) => {
   } else if (event.key === 'ArrowDown') {
     event.preventDefault();
     speed.value = Math.max(speed.value - 0.5, 0.5);
+  } else if (key === 'w') {
+    event.preventDefault();
+    imageWidth.value = Math.min(imageWidth.value + 5, 200);
+  } else if (key === 'q') {
+    event.preventDefault();
+    imageWidth.value = Math.max(imageWidth.value - 5, 20);
   }
 };
 
@@ -100,12 +103,11 @@ const startAutoScroll = () => {
     if (gallery.value) {
       gallery.value.scrollBy(0, speed.value);
       
-      // Циклічна прокрутка
       if (gallery.value.scrollTop >= gallery.value.scrollHeight - gallery.value.clientHeight) {
         gallery.value.scrollTop = 0;
       }
     }
-  }, 30);
+  }, 6);
 };
 
 const stopAutoScroll = () => {
@@ -119,9 +121,12 @@ const stopAutoScroll = () => {
 
 <style scoped>
 .gallery-container {
-  height: 100vh;
+  height: 96vh;
+  max-height: 1080px;
   display: flex;
   flex-direction: column;
+  padding-left: 8px;
+  background: #f0f0f0;
 }
 
 .upload-section {
@@ -129,6 +134,7 @@ const stopAutoScroll = () => {
   background: #fff;
   border-bottom: 2px solid #ddd;
   text-align: center;
+  margin-bottom: 5px;
 }
 
 .upload-btn {
@@ -167,28 +173,5 @@ const stopAutoScroll = () => {
   height: auto;
   border-radius: 8px;
   margin: 0 auto;
-}
-
-.controls {
-  padding: 15px;
-  background: #f0f0f0;
-  text-align: center;
-  border-top: 1px solid #ccc;
-}
-
-.controls p {
-  margin: 5px 0;
-  font-size: 14px;
-  color: #666;
-}
-
-.controls strong {
-  color: #333;
-}
-
-.speed-display {
-  font-size: 16px;
-  color: #0066cc;
-  margin-top: 10px;
 }
 </style>
