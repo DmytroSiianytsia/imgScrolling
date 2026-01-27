@@ -2,7 +2,7 @@
   <div class="gallery-container" :style="{ background: backgroundColor }">
     <div class="gallery" ref="gallery">
       <div class="upload-section">
-        <div class="header-controls">
+        <div class="header-controls" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false">
           <div class="control-group">
             <label for="color-picker">Фон:</label>
             <input 
@@ -21,17 +21,27 @@
             style="display: none"
           />
           <button @click="triggerFileInput" class="upload-btn">Завантажити файли</button>
-          <div class="instructions">
+          <div class="instructions" :class="{ 'visible': showTooltip }">
             <div class="instruction-item"><kbd>S</kbd> - Почати прокрутку</div>
             <div class="instruction-item"><kbd>F</kbd> - Зупинити прокрутку</div>
             <div class="instruction-item"><kbd>↑</kbd> - Збільшити швидкість</div>
             <div class="instruction-item"><kbd>↓</kbd> - Зменшити швидкість</div>
             <div class="instruction-item"><kbd>W</kbd> - Збільшити ширину</div>
             <div class="instruction-item"><kbd>Q</kbd> - Зменшити ширину</div>
+            <div class="instruction-item"><kbd>R</kbd> - Видалити картинку (при ховері)</div>
           </div>
         </div>
       </div>
-      <img v-for="(image, index) in images" :key="index" :src="image" alt="Gallery image" :style="{ width: imageWidth + '%' }" />
+      <img 
+        v-for="(image, index) in images" 
+        :key="index" 
+        :src="image" 
+        alt="Gallery image" 
+        :style="{ width: imageWidth + '%' }" 
+        @mouseenter="hoveredImageIndex = index"
+        @mouseleave="hoveredImageIndex = null"
+        :class="{ 'hovered': hoveredImageIndex === index }"
+      />
     </div>
   </div>
 </template>
@@ -47,6 +57,8 @@ const scrollInterval = ref(null);
 const speed = ref(0.5);
 const imageWidth = ref(100);
 const backgroundColor = ref('#f0f0f0');
+const hoveredImageIndex = ref(null);
+const showTooltip = ref(false);
 
 onMounted(async () => {
   const modules = import.meta.glob('./assets/images/**/*', { 
@@ -113,6 +125,10 @@ const handleKeyPress = (event) => {
   } else if (key === 'q') {
     event.preventDefault();
     imageWidth.value = Math.max(imageWidth.value - 5, 20);
+  } else if (key === 'r' && hoveredImageIndex.value !== null) {
+    event.preventDefault();
+    images.value.splice(hoveredImageIndex.value, 1);
+    hoveredImageIndex.value = null;
   }
 };
 
@@ -162,6 +178,7 @@ const stopAutoScroll = () => {
   align-items: center;
   justify-content: center;
   gap: 20px;
+  position: relative;
 }
 
 .control-group {
@@ -190,12 +207,31 @@ const stopAutoScroll = () => {
 }
 
 .instructions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  padding: 15px 20px;
   display: flex;
+  flex-wrap: wrap;
   gap: 15px;
   font-size: 13px;
   color: #555;
-  padding-left: 20px;
-  border-left: 2px solid #ddd;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.instructions.visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .instruction-item {
@@ -249,5 +285,12 @@ const stopAutoScroll = () => {
   height: auto;
   border-radius: 8px;
   margin: 0 auto;
+  cursor: pointer;
+  transition: opacity 0.2s, box-shadow 0.2s;
+}
+
+.gallery img.hovered {
+  opacity: 0.85;
+  box-shadow: 0 0 15px rgba(255, 100, 100, 0.4);
 }
 </style>
