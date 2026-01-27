@@ -157,7 +157,7 @@ const stopAutoScroll = () => {
 
 <style scoped>
 .gallery-container {
-  height: 96vh;
+  height: 100vh;
   max-height: 1080px;
   display: flex;
   flex-direction: column;
@@ -277,6 +277,7 @@ const stopAutoScroll = () => {
   flex-direction: column;
   gap: 5px;
   scrollbar-width: thin;
+  padding-bottom: 500px;
 }
 
 .gallery img {
