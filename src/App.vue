@@ -1,16 +1,35 @@
 <template>
-  <div class="gallery-container">
+  <div class="gallery-container" :style="{ background: backgroundColor }">
     <div class="gallery" ref="gallery">
       <div class="upload-section">
-        <input 
-          ref="fileInput" 
-          type="file" 
-          multiple 
-          accept="image/*"
-          @change="handleFileUpload"
-          style="display: none"
-        />
-        <button @click="triggerFileInput" class="upload-btn">Завантажити файли</button>
+        <div class="header-controls">
+          <div class="control-group">
+            <label for="color-picker">Фон:</label>
+            <input 
+              id="color-picker"
+              v-model="backgroundColor" 
+              type="color"
+              class="color-picker"
+            />
+          </div>
+          <input 
+            ref="fileInput" 
+            type="file" 
+            multiple 
+            accept="image/*"
+            @change="handleFileUpload"
+            style="display: none"
+          />
+          <button @click="triggerFileInput" class="upload-btn">Завантажити файли</button>
+          <div class="instructions">
+            <div class="instruction-item"><kbd>S</kbd> - Почати прокрутку</div>
+            <div class="instruction-item"><kbd>F</kbd> - Зупинити прокрутку</div>
+            <div class="instruction-item"><kbd>↑</kbd> - Збільшити швидкість</div>
+            <div class="instruction-item"><kbd>↓</kbd> - Зменшити швидкість</div>
+            <div class="instruction-item"><kbd>W</kbd> - Збільшити ширину</div>
+            <div class="instruction-item"><kbd>Q</kbd> - Зменшити ширину</div>
+          </div>
+        </div>
       </div>
       <img v-for="(image, index) in images" :key="index" :src="image" alt="Gallery image" :style="{ width: imageWidth + '%' }" />
     </div>
@@ -27,6 +46,7 @@ const isScrolling = ref(false);
 const scrollInterval = ref(null);
 const speed = ref(0.5);
 const imageWidth = ref(100);
+const backgroundColor = ref('#f0f0f0');
 
 onMounted(async () => {
   const modules = import.meta.glob('./assets/images/**/*', { 
@@ -135,6 +155,62 @@ const stopAutoScroll = () => {
   border-bottom: 2px solid #ddd;
   text-align: center;
   margin-bottom: 5px;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-group label {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+}
+
+.color-picker {
+  width: 50px;
+  height: 40px;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.color-picker:hover {
+  border-color: #0066cc;
+}
+
+.instructions {
+  display: flex;
+  gap: 15px;
+  font-size: 13px;
+  color: #555;
+  padding-left: 20px;
+  border-left: 2px solid #ddd;
+}
+
+.instruction-item {
+  white-space: nowrap;
+}
+
+.instruction-item kbd {
+  background: #f0f0f0;
+  border: 1px solid #999;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-family: monospace;
+  font-weight: bold;
+  color: #333;
+  margin-right: 5px;
 }
 
 .upload-btn {
