@@ -61,20 +61,20 @@ const hoveredImageIndex = ref(null);
 const showTooltip = ref(false);
 
 onMounted(async () => {
-  const modules = import.meta.glob('./assets/images/**/*', { 
-    query: '?url',
-    import: 'default' 
-  });
+  // const modules = import.meta.glob('./assets/images/**/*', { 
+  //   query: '?url',
+  //   import: 'default' 
+  // });
   
-  const imageFiles = Object.keys(modules).filter(key => 
-    /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(key)
-  );
+  // const imageFiles = Object.keys(modules).filter(key => 
+  //   /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(key)
+  // );
   
-  const loadedImages = await Promise.all(
-    imageFiles.map(key => modules[key]())
-  );
+  // const loadedImages = await Promise.all(
+  //   imageFiles.map(key => modules[key]())
+  // );
   
-  images.value = loadedImages;
+  // images.value = loadedImages;
   
   window.addEventListener('keydown', handleKeyPress);
 });
@@ -90,18 +90,19 @@ const triggerFileInput = () => {
   fileInput.value.click();
 };
 
-const handleFileUpload = (event) => {
+const handleFileUpload = async (event) => {
   const files = Array.from(event.target.files);
-  
-  files.forEach(file => {
-    const reader = new FileReader();
-    
-    reader.onload = (e) => {
-      images.value.push(e.target.result);
-    };
-    
-    reader.readAsDataURL(file);
+
+  const readFiles = files.map(file => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    });
   });
+
+  const results = await Promise.all(readFiles);
+  images.value.push(...results); // Порядок гарантовано збережено
   
   fileInput.value.value = '';
 };
