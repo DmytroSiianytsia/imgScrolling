@@ -277,11 +277,5 @@ const stopAutoScroll = () => {
   border-radius: 8px;
   margin: 0 auto;
   cursor: pointer;
-  transition: opacity 0.2s, box-shadow 0.2s;
-}
-
-.gallery img.hovered {
-  opacity: 0.85;
-  box-shadow: 0 0 15px rgba(255, 100, 100, 0.4);
 }
 </style>
