@@ -53,7 +53,7 @@ const gallery = ref(null);
 const fileInput = ref(null);
 const images = ref([]);
 const isScrolling = ref(false);
-const scrollInterval = ref(null);
+let scrollAnimationId = null;
 const speed = ref(0.5);
 const imageWidth = ref(100);
 const backgroundColor = ref('#f0f0f0');
@@ -61,28 +61,13 @@ const hoveredImageIndex = ref(null);
 const showTooltip = ref(false);
 
 onMounted(async () => {
-  // const modules = import.meta.glob('./assets/images/**/*', { 
-  //   query: '?url',
-  //   import: 'default' 
-  // });
-  
-  // const imageFiles = Object.keys(modules).filter(key => 
-  //   /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(key)
-  // );
-  
-  // const loadedImages = await Promise.all(
-  //   imageFiles.map(key => modules[key]())
-  // );
-  
-  // images.value = loadedImages;
-  
   window.addEventListener('keydown', handleKeyPress);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeyPress);
-  if (scrollInterval.value) {
-    clearInterval(scrollInterval.value);
+  if (scrollAnimationId !== null) {
+    cancelAnimationFrame(scrollAnimationId);
   }
 });
 
@@ -102,7 +87,7 @@ const handleFileUpload = async (event) => {
   });
 
   const results = await Promise.all(readFiles);
-  images.value.push(...results); // Порядок гарантовано збережено
+  images.value.push(...results);
   
   fileInput.value.value = '';
 };
@@ -136,22 +121,26 @@ const handleKeyPress = (event) => {
 const startAutoScroll = () => {
   isScrolling.value = true;
   
-  scrollInterval.value = setInterval(() => {
-    if (gallery.value) {
+  const scroll = () => {
+    if (gallery.value && isScrolling.value) {
       gallery.value.scrollBy(0, speed.value);
       
       if (gallery.value.scrollTop >= gallery.value.scrollHeight - gallery.value.clientHeight) {
         gallery.value.scrollTop = 0;
       }
+      
+      scrollAnimationId = requestAnimationFrame(scroll);
     }
-  }, 6);
+  };
+  
+  scrollAnimationId = requestAnimationFrame(scroll);
 };
 
 const stopAutoScroll = () => {
   isScrolling.value = false;
-  if (scrollInterval.value) {
-    clearInterval(scrollInterval.value);
-    scrollInterval.value = null;
+  if (scrollAnimationId !== null) {
+    cancelAnimationFrame(scrollAnimationId);
+    scrollAnimationId = null;
   }
 };
 </script>
